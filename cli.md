@@ -22,4 +22,21 @@ kafka-topic.sh
 kafka-console-producer.sh --broker-list 127.0.0.1:9092 --topic first_topic --producer-property acks=all
 
 
+# THIS IS COMMAND YOU ALWAYS USED FOR CONSUMER CLI
 
+# command to start console consumer message will stream
+kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 -topic first_topic
+#note kafka-console-consumer uses a random group id if don't specify
+
+# if you want to load message from to start you send from to producer
+kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 -topic first_topic --from-beginning
+
+kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 -topic first_topic --group my-first-application
+kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 -topic first_topic --group my-second-application --from-beginning
+
+
+# for consumer group
+
+# kafka-consumer-group to list all consumer group, describe a consumer group, delete consumer group info, or reset consumer group offsets
+kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group my-second-application
+kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group my-first-application
