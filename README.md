@@ -1,165 +1,184 @@
+## Topic
+
+Topics a particular stream of data
+
+Similar to table in database ( without all constraint )
+
+You can have have as many topic as you want
+
+A topic is identified by its name
+
+Topics are split in partitions
+
+Each partition is ordered
+
+Each message with a partiton gets an incremental id called offset
+
+The first message to partition zero is going have the offset zero next one is offset one, ect, etc ...
+
+Example:
+You have a lot of car, and each car has GPS in it, basicly we want to each car to report its GPS position to kafka
+
+you can have topic and you named it is car_gps that contains the position of all car
+
+All car will send a message to kafka every 20 seconds, each message will contains the car_id and car_position
+
+
+If you have 1000 car, and 1000 car will send message to topic car_topic 
+
+Noted: 
+1. offset only have meaning  for a  specific partition
+2. order is guaranteed only within a partition
+3. data is kept only for a limited time ( default is a one week )
+4. Once data is written to a partition. It can't be changed
+5. Data is assigned randomly to a partition unless key is provided 
+
 ## Broker
-cluster có chứa rất nhiều broker ( servers )
-được định danh bằng id
-mỗi broker chứa certain topic partitons
-sau khi kết nối tới broker ( được gọi là bootstrap broker ) bạn sẽ kết nối tới toàn bộ cluster
+
+A kafka cluster is conposed a multiple brokers ( server )
+
+Each broker is identified with the id ( interger )
+
+Each broker contains certain topic partition
+-> each broker has some kind of data, but not all the data
+
+After connection to any broker ( called bootstrap broker ) you will be connected to the entire cluster
 
 ### Example of topic-A với 3 partitions với 3 broker
 
 ![Alt text](image/broker_with_3_partitions.PNG?raw=true "Title")
+
+Partition number and the broker number there is a no relationship. It could be in whatever order. But as you can see. When you create a topic, kafka will automaticly assign topic and dsitribute to all brokers 
 
 ### Example of topic-B with 2 partitions
 
 ![Alt text](image/topic_b_with_partitions.PNG?raw=true "Title")
 
 ## Topic replication factor
-Topics nên có replication factor lớn hơn 1 thường sẽ là 2 hoặc 3
-Nếu broker có down, thì con broker khác sẽ lên serve the data
 
-### ví dụ về 3 broker 2 replication factor
+if the machine go does, and everything still work => replication does that for us. 
 
-topic-A có 2 broker: broker 101 và broker 102
+Topics should have  a replication factor > 1 ( usually 2 and 3 )
 
-partition 0 được assigned vào broker 101
+This way if a broker is down, another broker still server data
 
-partition 1 được assigned vào broker 102
+### Topic-A with 2 partitions and replication factor of 2
 
-==> quá trình hình thành Replication Factor
-
-partition 0 topic-A đang ở Broker 101 thì sẽ được replicas ở  Broker 102
-
-partition 1 topic-A đang ở Broker 102 thì sẽ được replicas ở Broker 103
 ![Alt text](image/broker_with_2_repliation_factor.PNG?raw=true "Title")
 
-Trong trường hợp chúng ta bị mất Broker 102 -> Broker 101 và Broker 103 vẫn serve the data
+If mean you have two copies of each data
 
-## Concept of Leader à Partition
-Tại mội thời điểm nhất định một broker có thể làm leader ở một số partitions nhất định
+Example we lost Broker 102 -> Broker 101 and 103 still serve the data -> to ensure data wouldn't be lost
 
-Chỉ leader có thể nhận và serve data cho partiton
+## Concept of Leader for a Partition
 
-Các brokers còn lại sẽ synchronize the data
+At any time, only one broker can be a leader for a given partition
 
- ## Producers
+Only the leader can receive and serve data for a partition
 
-Producers write data cho thằng topic ( which is made of partitons)
+The other broker will be synchronize the data
 
-Producers tự động biết cái broker và partition nào để write vào bạn không cần chỉ định nó
+Therefor each partition has one leader and multi ISR ( in-sync replicas )
 
-Trong trường hợp Broker failures, thì producers sẽ tự động recover
+There's a leader, and there a lot of ISR. zookeeper decides who is leaders and replicas
+
+
+## Producers
+
+1. Producers write data to topics ( which made of partitions )
+2. Producers automatically know which broker and partition to write to
+3. incase of Broker failures, Producers will automatically recover
 
 ![Alt text](image/produces.PNG?raw=true "Title")
 
-Producers có thể chọn nhận acknowledgment of data writes 
-acknowledgement được coi là đồng nghĩa  cho sự xác nhận
+Producers can choose to receive acknowledgment of data to write
 
-acks=0 producers không đợi acknowledgment ( có thể khiến data mất ) gửi cho tới broker. broker đang processing thì chết ==>  data mất ==> dangerous
+acknowledgment is a synonym for confirmation
 
-acks=1 producer sẽ đợi cho leader acknowledgment ( giới hạn việc data mất )
+there is 3 kind of ack
 
-acks=all leader + replicas acknowledgment ( không có data mất )
+acks=0 producers won't wait for ack => possible data loss
+
+acks=1 producer will wait for  leader ack ( limited data loss )
+
+acks=all leader and repllicas ack ( no data loss )
 
 ## Producers: message keys
 
-Producers có thể chọn key cùng với message ( string, number, etc, ... )
+Producers can choose to send a key with the message
 
-Nếu key=null thì data sẽ send theo kiểu round robin ( broker 101 rồi broker 102 rồi tiếp theo broker 1030,.. rồi quay ngược lại )
+if key = null data is sent to round robin
 
-Nếu key được sent thì tất cả message cho điều đó key sẽ luôn luôn đi tới cùng partition
+if a key is sent then all messages for that key will always go to same partition
 
-a key về cơ bản được gửi nếu bạn cần thông tin message được ordering cho một vài field nhất định ( ex: truck_id )
+
+![Alt text](image/message_key.PNG?raw=true "Title")
 
 ## Consumers
 
-consumers sẽ đọc data từ topic ( được định danh bởi tên )
+Consumer read data from topic ( identified by name )
 
-consumers biết broker nào để đọc từ nó
+Consumer know which broker to read from
 
-broker failures, consumers biết làm sao để recover lại
+in case of broker failures, consumers know how to recover
 
-data là được đọc theo thứ tự trong mỗi partitions
+Data is read in order within a partitions
+
 
 ![Alt text](image/consumer.PNG?raw=true "Title")
 
-Nó sẽ đọc theo partition lần lượt theo order, tức là nó không thể đọc offset 3 mà chưa đọc offset 2 trong partiton bất kỳ, và nó đọc partition 1 cũng đọc 1 ít ở partiton 2, 1 ít ở partiton 3 đồng thời
-
 ## Consumer Groups
-consumers đọc data ở trong consumer groups
-mỗi consumer trong group đọc từ exclusive partitons
+
+Consumer read data in Consumer Groups
+
+Each consumer with a group reads from  exclusive partitions
 
 ![Alt text](image/consumer_groups.PNG?raw=true "Title")
 
-nếu bạn nhiều consumers hơn partitions, một vài consumers sẽ là inactive
+If you have more consumers than partition, som consumer will be an inactive
 
 ![Alt text](image/consumer_groups_2.PNG?raw=true "Title")
 
 ## Consumer Offsets
 
-kafka lưu offsets cái mà consumer group đã được đọc
+kafka stores the offsets at which a consumer group is reading
 
-offsets committed live trong kaffka với tên của topic là __consumer_offsets
+The offsets comitted live in kafka topic named __consumer_offsets
 
+When a consumer in a group has processed data received from kafka, it committing the offsets
 
-Khi mà consumer trong group đã xử lý dữ liệu nhân về từ kafka, nó nên được committing the offsets
-
-Nếu consumer die, nó sẽ có thể đọc lại được từ khi nó rời đi và điều đó phải nhờ tới committed consumer offsets
+if consumer die, it will be able to alive and read back from where it left
 
 ![Alt text](image/consumer_offsets.PNG?raw=true "Title")
 
-Như bạn có thể hiểu được như là: consumer đọc được và xử lý xong thằng 4262 nó sẽ commit lại. Nêu consumer nó có die thì khi sống dậy nó sẽ tiếp tục đọc next after thằng 4262 là thằng 4263
-
-## Delivery semantics for consumer 
-
-consumer có 3 cách chọn khi commits the offsets
-
-### at most once
-offsets sẽ luôn được commit ngay sau khi message được nhận
-
-Nếu quá trình process diện ra sai theo bất kỳ một lý do nào đó thì message đó sẽ bị mất ( bởi vì nó sẽ không được đọc lại )
-
-### at least once
-offset sẽ được commit ngay sau message xử lý xong
-Nếu quá trình xử lý có bị lỗi thì message sẽ được đọc lại
-
-### extract once
-
 ## Kafka broker discovery
 
-tất cả kafka broker đều có thể gọi là bootstrap server
+Each kafka broker is also called "bootstrap server:
+-> that means you only need to connect one of them and you will be connected to a entire cluster
 
-Nghĩa là nếu bạn chỉ cần kết nối tới 1 broker bạn kết nối tới toàn bộ cluster
-
-mỗi broker đều hiểu tất cả brokers, topics và partitons ( metadata )
+Each broker knows about all brokers, topic and partition ( metadta )
 
 ![Alt text](image/broker_discovery.PNG?raw=true "Title")
 
 
 ## Zookeeper
 
-zookeeper quản lý các brokers ( giữ list của chúng )
+Zookeeper manages broker
 
-zookeeper giúp cho việc perfoming leader cho mỗi partitons
+Zookeeper help in performing leader and RIS for partitions
 
-zookeeper gửi thông báo cho kafka trong trường hợp có gì thay đổi
+Zookeeper send notification to kafka about new topic, brokers dies, broker come alive, topic deleted, ...
 
-Ví dụ: nếu topic, broker chết, broker sống lại, xóa topic thì zookepper phải gửi đên kafka thông báo
+zookeeper by design operates with odd number of server (1, 3, 5, 7 ...)
 
-kafka sẽ không thể hoạt động nếu thiếu zookeeper
-
-zookeeper theo design sẽ được khởi tạo với số lẻ server nhưu 3 5 7
-
-zookeeper sẽ có 1 leader xử lý việc write , còn phần còn lại thì sẽ là follower xử lý việc read
-
-phiên bản v 0.10 thì zookeeper sẽ không store consumer offset nữa
+Zookeeper has a leader and the rest of server is follower
 
 ## kafka guarantees
 
-message được chèn vào topic-partition theo thứ tự mà chúng đã gửi
+message are appended to a topic-partition in the order they sent
 
-consumer sẽ đọc message theo thứ tự mà chúng stored in topic-partition
+consumers read message in the order stored in a topic-partition
 
-với replication factor of N, producers và consumers có thể chịu đựng được đến N-1 brokers beeing down
-
-Lý do tại replication factor là 3 thì là ý kiến hay:
-cho phép 1 broker bị down vì lý do maintenance
-cho phép 1 broker bị down vì lý do unexpectedly
+why is replication factor is 3 is a good idea
+1. allows for one broker to be taken down for maintenance
+2. allows for another broker to be taken down unexpectedl
