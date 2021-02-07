@@ -1,162 +1,395 @@
-Message queuing is an important facet of any microservice architcture. It is a way of excahnging data betwwen proccess,
-applications and servers. RabbitMQ is one of the most widely used message brokers in the world,
-boasting over 35000 production deployments across both startus and big enterprises alike.
+WHAT IS RABBITMQ?
 
-RabbitMQ is a message queuing software also known as a meesage broker or queue manager.
-Simply put, it is a software where queues can defined,
-and applications may connect and transfer a message onto it.
-Message queues enable asynchronous and consuming messages interact with the queue instead of communicating directly with each other.
+Message queing is an important facet of any microsrvice architecture.
+It is way of exchanging data between processes, application and servers.
+RabbitMq is one of the most widely used message brokers in the world, boasting over 35000 production deployments acroos both startup and enterprise
 
-A meessage can include any information. It could, for example, contain information about process or job that should start on another application,
-possibly even on another server, or it might be a simple text message.
+RabbitMQ is a message queuing software also known as a message broker or queue manager.
+Simply put, it is software where queues can be defined and applications may connect and transfer a message onto it
+Message queues enable asynchronous communication
+Which means that other application that are producin and consuming messages interact with queue instead of communicating directly with each other.
 
-The message broker stores the messages until a reeiving application connects and consumers a message off the queue.
-The receiving application then appropriatyly processes the message.
+A message can include any information. It could for example container information about process or job that should start on anothere application, possibly even on another server or it might be a simple text message
+The message broker stores the messages until a receiving application connects and consumes a message off the queue.
+The receiving application then appropriately processes the messages.
 A message producer adds messages to a queue without having to wait for them to be processed
 
-Example:
+EXAMPLE
 
-Amessage broker can act as middleman for variout services. A broker can be used to reduce loads and delivery times by web application servers.
+A message broker can act as a middleman for various services.
+A broker can be used to reduce loads and delivery times by web application servers.
 A task that would generally take a lot of time to process can be delegated to a third party whose only job is to perform them.
 
-Example is application about pdf generator. The application allows users to upload information to a website 
-The website handles the information and generates a PDF which ts then emailed back to the user. The whole processing this example takes several seconds to perform
+Example of real worl application you alway use is PDF generator
+The specific is the application allows users to upload information to a website. The website handles the information and generate a pdf, which is then emailed back to the user.
+The whole processing in this example takes several seconds to perform
 
-When the uses has entered user information into the web interface,
-the web application puts a "pdf processing" job into a message, including information about the job such as name and email.
-The message is then placed onto a queue defined in RabbitmQ using an exchange process.
-The underlying architecture of message queue is simple -client applications called producers create messages and deliver them to the broker
-The broker is, essentially, the message queue. Other applications known as consumers, connect to the queue and subscribe to messages from the broker,
-processing those messages accroding to their fucntion.
-The software interating with the broker can be a producer, a consumer or both. 
-Messages placed in the queue are stored untilthe consumer retrieves them
+The the user has entered user information into the web interface, the web application puts "pdf processsing" job into message, including information about the job such as name and email. The message is then placed onto a queue defined in RabbitMQ using an exchange process.
+The underlying architecture of message queue is simple client application called producers create message and deliver them to the broker.
+The broker is essentially the message queue.
+Other applications known as consumers connect to the queue and subscribe to messages from the broker, processing those messages according to their function. 
+The software interacting with the brokerr can be a producer, a consumer, or both.
+Message placed in the queue are stored until the consumer retieves them.
 
-If the pdf processing applicatin crashes or if many pdf request are coming at the same times,
-message would continue to pile up in the queue until the consumer starts again.
-it would then process all the messsages, one by one.
+In the pdf processing application crashes or if many pdf request are coming at the same time, messages would continue to pile up in the queue until the consumer starts again
+It would then process all the messages, one by one
+
+PICTURE 2
 
 WHY AND WHEN TO USE RABBITMQ
 
-Message queuing allows web servers to respond to request in their own time instead of being forced to perform resource-heavy procedures immediately.
-Message queuing is also useful for distributing a message to multiple recipients for consumption or when balancing the load between workers/
+Message queuing allows web servers to respond to request in their own  time instead of being forced to perform resource-heavy procedures immediately.
+Message queuing is also useful for distributing a message to multiple recipients for consumption or when balancing the load between workers./
 
-The consumer application removes a messages from the queue and processes the pdf at the same time as the producer pushes new task messages to the queue. the consumer cn be on an entirely different server then the publisher or they can be created in one programming language and handled in another programming langrage, 
-as the two applications only communicate through the messges they are sending to eeach other.
-The two services have what is know as low coupling betwwen the sender and the receiver
+The consumer application removes a message from the queueu and processes the PDF at the same times as the producer pushes new task messages to the queue.
+The consumer can be on an entirely different server then the publisher or they can be located on the same server
+It makes no different.
+Requests can be created in one programming language and handled in another programiing language, as the two application only communicate through the messages they are sending to each other.
+The two services have what is know as low coupling between the sender and the receiver
 
-Example:
-1. The user sends pdf create request to the web application
-2. The web application ( the producer ) sends a message to RabbitmQ that includes data from the request, such as name and email.
-3. An exchange accepts the messages from a producer application and routes them to correct message queues.
+
+PICTURE 3
+
+
+1. The user sends a pdf create request to the web application
+2. The web appication ( the producer ) sends a message to RabbitMQ that includes data from the request, such as name and email
+3. An exchange accepts to the messages from a producer appliction and routes them to correct messages queues
 4. The pdf processor ( the consumer ) receives the job message from the queue and starts the processing of the pdf
 
-EXCHANGES
 
-Messages are not pushlished directly to a queue instead, the producer sends a message to an exchange. The job of an exchange is to accept messages from the producer applications and route them to the correct messge queues. it does this with the hlep bindings and routing keys. A binding is a link between a queue and an exchange
 
-Messages Flow in RabbitMQ
-1. The producer publishes a message to an exchange. When creating an exchange, its type must be specified. The different types of exchanges are explained in the detail later on in this book.
-2. The exchage receives the message and is now responsible for the routing of the message. The exchange looks at different message attributes andkeys depending on the exchange type.
-3. In this case, we see two bindings to two different queues from the exchange. The exchange routes the message to the correct queue, depending on theese attributes/
-4. The message stay in the queue until the consumer processes them.
-5. The consumer then removes the message from the queue once handled
+EXCHANGE
 
-TYPES OF EXCHANGES
+Message are not published directly to a queue instead the producer sends a message to an exchange.
+The job of an exchange is to accept messages from the producer application and route them to the correct message queues.
+It does this with the help of bindings and routing keys.
+A binding is a link between a queue and an exchange.
 
-More in-depth understanding of the different exchange types, binding keys, routing keys.
+Message Flow in RabbitMQ
 
-direct: a direct exchange delivers message to queues basedon a message "routing key". 
-In direct exchange, the message is routed to the queue with the exact match of binding key as the routing key of the message.
-For example, if the queue is bound to the exchange using the binding key " pdfprocess ",  a message published to the exchange wuith a routing key " pdfprocess" is routed to that queue.
+1. The producer publishes a message to an exchange.
+When creating an exchange, its type must be specified.
+2. The exchange receives the message and is now responsible for the routing of the message.
+The exchange looks at different message attributes and keys depeding on the exchange type
+3. In this case, we see two bindings to two different queues from the exchange.
+The exchanges routes the messagess to the correct queue, depeding on these attributes
+4. The messages stay in the queue until the consumer processes them.
+5. The consumer then removes the message from the queue one by one when handled
 
-topic the topic exchange performs a wild match betwwen the routing key and routing pattern specified in the binding.
+PICTURE 4
 
-Fanout: a fanout exchanges routes messages to all of the queues that are bound to it.
+TYPE OF EXCHANGES
 
-Headers- A header exchange uses the message header attributes for routing purpose
+1. DIRECT- a direct exchange delivers message to queues based on a message routing key.
+In a direct exchange, the message is routed to the queue with exact match of binding keys as the routing key of the message.
+for example, if the queue is bound to the exchange using th binding key " pdfprocess ", a message published to the exchange with a routing key " pdfprocess " is routed to that queue
+
+2. TOPIC -  The topic exchange performs a wildcard match between the routing key and the routing pattern specified in the binding.
+
+3. FANOUT - A fanout exchange routes messages to all of the queues that are bound to it.
+
+4. Headers - A header exchange use the message heaer attributes for routing purpose
+
+PICTURE 5
+
 
 RABBITMQ AND SERVER CONCEPTS
 
-Below are some inportant concepts that are helpful to know we dig deeper into RabbitMQ. The default virtual host, the default user, and the default permissions are used in the example that below
+Below are some important concepts that are helpful to know before we dig deeper into RabbitMQ.
+The default virtual host, the default user, and the default permissions are used in the examples that follow.
+1. producer - application that sends the messages
+2. consumer - application that receives the messages
+3. queue - buffer that stores messages
+4. message - data send from producer to consumer through RabbitMQ
+5. Connection - TCP connection between the application and the RabbitMQ broker
+6. Channel - A virtual connection inside a connection. When publishing or consumming messages or subscribing to a queue, it's all done over a channel.
+7. Exchange - Receives messages from producers and pushes them to queues depeding on rules defined by the exchange type.
+A queue nees to be bound to at least one exchange to be able to receive message.
+8. Binding- link between a queue and an exchange
+9. Routing Key - the key that the exchange looks at to decide how to route the message to queues. Think of the routing key as the destination address of a message
+10. AMQP - Advanced Message Queueing Protocol - the primatry protocol used by RabbitMQ for messaging
+11. Users - It's possible to connect to RabbitMQ with a given username and password with assigned permission such as rights to read and write and configure.
+Users can also assigned permissions to specific virtual hosts
+12. Vhost - Virtual host or Vhost segregate applications that are using the same RabbitMQ instance. Different users can have different access privileges to different vhosts and queues, and exchanges can be created so that they only exist in one vhost
+13. Ack and confirm - Indicator that messages have been receive or acted upon. Acknowledgements can be used in both directions; for example a consumer can indicate to the server that it has received/processed a message and the server could report the same thing to the producer
 
-Producer - Application that sends the messages
-Consumer - Applicatin that receives the messages
-Queue - Buffer that stores messages
-Message - Data sent from producer to consumer through RabbitMQ
-Connection - TCP connection between the application and the RabbitMQ broker
-Channel - A virtual connection inside a connection. when publishing or consuming messages or subscribing to a queue it's all done over channel
-Exchnage- Recevies messages from producers and pushes them to queues depending on rules difined by ehe exchange type.
-A queue needs to be bound to at least one exchange to be able to receive messages
-Binding- Link between a queue and an exchange
-Routing key - The key that the exchange looks at to decide how to route the message to queues.
-Think the routing key as the destination address of a message
-AMQP advanced message queueing protocol - the primaty protocol used by RabbitMQ for messaging/
-Users - It's possible to connect to RabbitMQ with a given username and passowrd, with assigned permissions such as rights to read, write and configure. 
-Users can also be assigned permissions to specfic virtual hosts
-Vhost - virtual host or Vhost segregate applications that are using the same RabbitMQ instance. Different users can have different access privilegees to different vhosts and queues, and exchanges can be created so that they only exist in one vhost
-acknowledgmetnts and confirms: indicators that messages have been received or acted upon. Acknowledgement can be used in both directions.
-a consumer can indicate to the server that it has received/precessed a message, and the server culd report the same thing to the producer
+THE MANAGEMENT INTERFACE
 
-Publish and consumer messages
+RabiitMq provides an easy to use web user interface ( UI ) for management and monitoring of the RabbitMQ server. 
 
-RabbitMQ speaks the AMQP protocol by default, and to be able to communicte with RabbitMQ, a library that understands the same protocol should be used. A
-To communicate with RabbitMQ The methods should be used when connection to the RabbitMQ broker using the given parameter hostname, port number 
-when declaring a queue or an exchange There is a choice of libraries for all major programming languages
-1. First of all we need to setup/ create a connection object
-Here the username, password, connection URL, port, etc, .. are specfied. A TCP connection will be set up between the application and RabbitMQ
-2. Second a chanel needs to be opened. The connection interface helps you accomplish that. 
-You are now readdy to send and receive messages
-3. Declare/create a queue. Declaring a queue will cause it to be created if it does not already exist. All queues need to be declred before they can be used
-4. Set up exchanges and bind a queue to an exchange. Messages are only routed to a queue if the queue is bound to an exchange
-5. Publish a message to an exchane and consume a message from the queue
-6. close the chanel and the connection
+The meanagement interface allows users to manage create delete and list queues. It allows for monitoring of queue length, checking message rate, changing and adding user permissions, and much more.
 
-What are exchanges, bindings, and routing keys?
-In what way are exchenges and queues associated with each other?
-When should they be used and how?
 
-Messages are not published directly to a queue instead
-the producer sends messages to an exchange.
-Exchanges are message routing agents, living in a virtual host ( vhost ) within RabbitMQ
-Exchanges accept messages from the producer application and route them to message queues with the help of header attributes bindings, and routing keys
+PUBLISH AND CONSUMER MESSAGES
 
-A binding is la link configured to make a connection betwwen a queue and an exchange.
-The routing key is a message attribute.
-the exchange misht look at the routing key, depending on exchange type, when deciding on ow to route the message to the correct queue
+RabbitMQ speaks the AMQP protocol by default and to be able to communicate with RabbitMQ, a library that understand the same protocol should be be used.
+A RabbitMQ client library ( sometimes called helper library ) abstrct the complexity of the AMQP protocol into simple methods
 
-Exchangesm connection and queues cn be configured to include properties such as durable tmporary and auto delete upon creation
+1. First of all, we need to setup/creat a connection object. Here the username password, connection, port, .. 
+A TCP connection will be set up betwwen the application and RabbitMQ
+2. Secondly, a chennel needs to be opened.
+The connection interface helps you accomplish that.
+you are now ready to send and receive messages
+3. Declare/create a queue. Declating a queue will cause it to be created if it does not already exist. 
+All queues needs to be declared before they can be used/
+4. Set up exchange and bind a queue to an exchange. Messages are only routed to  queue if the queue if the queue is bound to an exchange
+5. publish a message to an exchange and consume a message from the queue
+6. Close the chanel and the connection
 
-In RabbitMQ four different types of exchanges route the message differently using different parameters and bindings setups.
+EXCHANGES, ROUTING KEYS, BINDINGS DEEP DIVE
 
-Direct Exchange: a direct exchage delivers messages to queues based on routing key. 
-The routing key is a message attribute addesd to the messge by the producer
-Think of the routing key as an address that exchange uses to decide on how to route that message
+After i introduced a basic of how to familiar but not specific, And i had a lot of question like what are exchanges, binding and routing keys?
+or in what way are excahnges and queues associated with each other? 
+and or When should they be used and how?
+
+let dive in
+
+As i mentioned early, messages are not published directly to a queue.
+Instead, the producer sends messages to an exchange,.
+Excahnges are message routing agents, living in a virtual host ( vhost ) within RabbitMQ.
+Exchanges accept messages from the producer application and route them to message queues with the help of header attribute, bindings and routing keys
+
+A binding is a link configured to make a connection between a queue and an exchange. The routing key is a message attribute.
+The exchange misht look at the routing key, depleding on exchange type, when deciding on how to route the message to the correct queue
+
+DIRECT EXCHANGE
+
+A direct exchange delivers messages to queues based on a routing key. 
+The routing key is a message attribute added to the message by the producer.
+Think the the routing key as an address that the exchange uss to decide on how to route the message.
 A message goes to the queues that have or has the exact match in binding key to the routing key of the message
-The direct exchanget type is useful to distinguish messages published to the same exchange using string identifier
+The direct excahnge type is useful to distinguish messages published to the same excahnge using a simple string identifier
 
-Queue A ( create_pdf_queue ) is bound to a direct exchange ( pdf_events )
-with the binding key ( pdf_create )
-When a new message with the routing key ( pdf_create ) arrives at the direct exchange, the exchange routes it to the queu ewhere the binding_key = routing_key
+Queue A (create_pdf_queue ) is bound to a direct exchange ( pdf_events ) with the binding key (pdf_create). When a new message with the routing key ( pdf_create ) arrives at the direct exchange,
+The exchanges routes it to the queue where the binding_key = routing_key
 
-Example1: 
+PICTURE 6
+
+Scenario 1:
 Exchange: pdf_events
-queue A: create_pdf_queue
-binding key between exchange ( pdf_events ) and queue A ( create_pdf_queue ): pdf_create
+Queue A: create_pdf_queue
+Binding key between exchange ( pdf_events ) and Queue A ( create_pdf_queue ) : pdf_create
 
-example2:
+Scenario 2:
+
 Exchange: pdf_events
 Queue B: pdf_log_queue
-binding key between exchange ( pdf_events ) and Queue B ( pdf_log_queue ) : pfd_log
+Binding: pdf_log, routing_key pdf_log. bounded
 
-A message with the routing key pdf_log is sent to the exchange pdf_events. the message is routed to create_log_queue because the routing key ( pdf_log )
-matcher the binding key ( pdf_log )
-
-note: if the message routing key does not matchany binding key, the message is discarded
-
-The default exchange AMQP brokers must provide for the direct exchange is "amp.direct"
-
-default exchange:
-The default exchange is a pre-declared direct excahnge with no name, usually referred to with the empty string, "". when using the default exchange the message is delivered to the queue with the name equal to the routing key of the message.
-Every queue is automatically bound to the default exchange with routing key that matches the queue name.
+A message with the routing_key pdf_log is sent to exchange pdf_events. The message is routed to create_log_queue because the routing key ( pdf_log ) matches the binding key ( pdf_log).
 
 TOPIC EXCHANGE
+
+Topic exchanges route messages to a queue based on a wild card match between the routing key and something called the routing pattern,
+which is specified by the queue binding.
+Messages can be routed to one or many queues or many queues depeding on this wildcard  match.
+
+The routing key must be a list of words, delimited by a period ( . ). Examples can be agreements.us or agreements.eu.something, which in this case identifies aggrements that are set up for a company with offices in different location.
+The routing pattern may contain ( * ) to match a word in a specific position of the routing key
+And symbol ( # ) indicates match zero or more words
+
+PICTURE 7
+
+The consumers indicate which tipics they are interested in. The consumer create a queue and sets up a binding with a given routing pattern to the exchange.
+All messages with a routing key that match the routing pattern are routed to the queue and stay there until the consumer handles the messages
+
+The default exchange AMQP brokers must provide for the topic exchange is amq.topic
+
+Scenario 1
+Exchange: aggreements
+Queue A: berlin_agreements
+
+Routing pattern between exchange ( agreements ) and Queue A ( berlin_agreements ): agreements.eu.berlin.#
+Example of message routing key that matches: agreements.eu.berlin and agreements.eu.berlin.store
+
+Scenario 2:
+Consumer B is interested in all the agreements:
+Exchange: agreements
+Queue B: all_agreements
+Routing pattern between exchange ( agreemnets ) and Queue B ( all_agreements) : agreements.#
+Example of message routing key that matches: agreements.eu.berlin and agreement.us
+
+Scenario 3:
+Consumer C is interesed in all aggreement for European stores
+Exchange: agreements
+Queue C: store_agreements
+Routing pattern between exchange ( agreemetns ) and Queue  C ( store_agreements ): agreemetns.eu.*.store
+
+Example of message routing keys that will match: agreements.eu.berlin and agreements.eu.something.store
+
+
+The message with routing key agreements.eu.berlin is sent to the exchange agreements.
+The message is routed to the queue berlin_agreements because of the routing pattern of agreements.eu.berlin.# matches any routing keys beginning with agreement.eu.berlin.
+The message is also routed to the queue_all_agreements since the routing key agreement.eu.berlin ) also matches the routing pattern agreements.#
+
+FANOUT EXCHANGE
+
+Fanout exchanges copy and route a received message to all queues that are bound to it regardless of routing keys or pattern matching as with direct and topic exchanges. key provided will be ignored
+Fanout exchange can be useful when the same message needs to be sent to one or more queues with the consumer who may process the same message in different ways like in distributed systems designed to broadcast various state and configuraton updates
+
+Scenario 1
+Exchange: sport_new
+Queue A: Mobile client queue A
+Binding: 
+A message is sent to the exchange sport_new. The message is routed to all queues. 
+Because all queues are bound to the exchange
+Provided routing keys are ignored
+
+
+PICTURE 8
+
+HEADER EXCHANGE
+
+A header exchange routes mesages based on arguments containing headers and optional values.
+Similar to topic excahnges, header exchanges decide their routes based on heder values instead of routing keys.
+A mesage is consider a match if the value of the header equal the value specified on the binding
+
+A unique argument named "x-match" can be added in the binding between exchange and the message queue.
+This argument decides if all headers must match or just one.
+Either common headers between the mesasage and the bindng counts as a match or all the header referenced in the binding need to be present in the message for it to match.
+The "x-match" property can have two different values: "any" or "all" where match and a value of any means at least one of the header pair must match.
+Header can be constructed using a wideer range of data types.
+Integer and hash functions are preferred over commonly used strings.
+The header exchange type is useful for directing messages with may contain subset of know citeria
+
+The default exchange AMQP brokers must provide for the header exchange is "amq.header"
+
+PICTURE 8
+
+Exchange: Binhding to Queue A with arguments ( key=value ): format=pdf, type report, x-match=all
+Exchange: Binding to Queue B with argumetns ( key=value ): format=pdf, type=log, x-match=any
+Exchange: Binding to Queue C with arguments ( key=value ): format=zip, type=report, x-match=all
+
+Scenario 1:
+
+Message 1 is published to the exchange with the header argument ( key=value ): format=pdf, type=report and with the binding argument "x-match=all"
+Message 1 is delivered to Queue A - all key/value pairs match
+
+Scenario 2:
+Message 2 is published to the exchange with the header arguments ( key=value ): format=pdf and with the binding argument x-match=any
+Message 2 is delivered to Queue A and Queue B - the queue is configured to match any of the header ( format or type )
+
+Scenario 3: 
+Message 3 is published to the exchange with the header arguments of ( key = value ): format=zip, type=log and with the binding argument x-match=all
+Message 3 is not deliveredd to any queue-the queue is configured to match all of the headers
+
+DEAD LETTER EXCHANGE
+
+RabbitMQ provides an AMQP extension known as the dead letter exchange.
+The dead letter excahnge captures messages that are not deliverable and routes them out of the queue.
+A message is considered "dead" when is has reached the end of it's time-to-live,
+the queue exceeds the max length ( messages or bytes ) configured for the queue, or the message bas been rejected by the queue or nacked by the consumer for some reason and is not marked for re-requeuing
+
+THE MANAGEMENT INTERFACE
+
+Queues, connection, channels, exchanges, users, and user permissions are handled-created, deleted and listed - from a web browser through the RabbitMQ amangement interface plugin
+Additionally message rates can be monitored and sending or receiving messages can be manually performed via the browser
+The interface plugin consists of single static HTML page that makes background queries to the HTTP API for RabbitMQ
+The management interface is useful for debugging application or an overview of the whle system is required
+
+
+CONCEPTS
+
+CLUSTER - A cluster consists of a set of nodes, i.e connected computers, working together.
+A RabbitMQ instance consisting of more than one node is called a RabbitMQ cluster
+NODE - a node is a single computer in the RabbitMQ cluster
+
+QUEUED MESSAGES
+
+This graph shows the total number of queued messages for all queues
+Ready show the number of messages that are available to be delivered
+Unacked are the number of messages for which the server is waiting for acknowledgment
+
+PICTURE OF  RABBITMQ OVERVIEW
+
+
+MESSAGE RATE
+
+Message rate is graph with the rate of how fast the message are being handled 
+Publish show the rate at which messages are entering the server and Confirm shows a rate at which the server is confirming 
+
+This represents the total number of connections, channels, exchanges, queues and consumer for ALL virtual hosts to which the current user has access
+
+NODES
+
+nodes show information about the different nodes in the RabbitMQ cluster on information about one single node if only a single node is used.
+There is also information about server memory, the number of Erlang processes per node, 
+and other node-specific information here.
+Infor shows further information about the node and enabled plugins
+
+PICTURE OF NODES ON RABBITMQ
+
+IMPORT/EXPORT DEFINITION
+
+It is possible to import and export configuration defintions. 
+When downloading the definitions, a JSON representation of the broker ( The RabbitMQ settings ) is given.
+This JSOn can be used to resore exchanges, queues, vhosts, policies, and users.
+This feature can be used as backup solution
+
+CONNECTIONS AND CHANNELS
+
+RabbitMQ connections and channels can be in different states, stating, tuning, opring, running, flow, blocking, blocked, closing, or closed
+If a connection enters flow-control this often means the cloent is being rate-litited in some way
+
+PICTURE OF IMPORT AND EXPORT DEFINITION
+
+CONNECTIONS
+
+The connections tab shows the connections established to the RabbitMQ server
+vhost shows in which vhost the connection operator and username shows the user associacted with the connection
+Channel displays the number of channels using the connection.
+SSL/TLS indicate whether the connection is secured with SSL or not
+
+PICTURE OF CONNECTION
+
+CHANNELS
+
+The channel tab shows the information about al lthe current channels. 
+The vhost show in which vhost the channel operates and the username shows the user assocated with the channel
+The guaranntee mode can be in confirm or transactional mode.
+When a channel is in confirm modem both the broker and the client count messages
+The broker then confirms messages as it handles them
+Confirm mode is activated once the confirm.select methos is used on a channel.
+
+PICTURE OF CHANNELS
+
+EXCHANGES
+
+All exchanges can be listed from the exchange tab.
+Virtual hsot shows the vhost for the exchange, type is the exchange type such as direct, topic, headers, and fanout
+Features show the parameter for the exchange stands for durable and auto-delete (AD)
+Features and types can be specified when the exchange is created.
+In this list, there are some amq.* exchanges and the default exchange
+which are created by default.
+
+PICTURE OF EXCHANGES
+
+
+Clicking on the exchange name displays a detailed page about the exchange
+Adding bindings to the exchange exchange and viewing already existing binding is are also actions that can be taken in this area as well as publishing a message to the exchange or deleteing the exchange.
+
+QUEUES
+
+The queue tab shows the queues for all or one selected vhost
+Queues may also be created from this area.
+Queues have different parameters and arguments depending on how they were created 
+The feature column shows the parameters that belong to the queue such as
+
+DURABLE QUEUE - A durable queue ensures that RabbitMQ never loses the queue.
+MESSAGE TTL - The time a mesage published to a queue can live before being discarded
+AUTO-EXPIRED - The time a queue can be unused before it is automatically deleted
+MAX-LENGTH - How many readdy messages a queue can hold before it starts to drop them
+MAX-LENGTH BYTES - The total size of ready message a queue can hold before starts to drop them
+
+THE PICTURE OF QUEUES
+
+BINDINGS
+
+All active bindings to the queue are shown under bindings.
+New bindings to queues can be created from here or unbinding a queue from an exchange as well
+
+PUBLISH MESSAGE
+
+Publish message can be performed mannually to the queue from this area
+The message will be publshed to the default exchange with the queue name as its routing key, ensuring that the message will be sent to the proper queue
+It is also possible to pulish a message to an exchange from the exchange view
